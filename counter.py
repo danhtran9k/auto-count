@@ -1,22 +1,20 @@
 """
-Pill counter — iteration 1.
+Pill counter — iteration 2.
 
-Approach: Otsu threshold + distance transform peak seeds.
+Approach: Otsu mask + distance transform + LOCAL-MAX peak seeds with auto-estimated pill radius.
 
-Rationale (vs iter 0):
-- iter 0 picked the count "closest to median of candidates", which systematically
-  selected merged-blob (undersegmented) results -> 0/15, all UNDER.
-- iter 1 uses a single principled pipeline:
-    1. Grayscale + Gaussian blur.
-    2. Otsu threshold (auto bg/fg). Invert if background is bright.
-    3. Morphological open + close to clean speckle and fill interior gaps.
-    4. Distance transform: each FG pixel -> distance to nearest BG.
-    5. Threshold the distance map at a fraction of its max -> one seed per pill,
-       even when pills touch.
-    6. Connected-components on the seeds = pill count.
+Vs iter 1: replaced global `0.5 * dist.max()` (which collapsed when a single deep cluster
+peak dominated) with local-maxima detection in a window sized to the estimated pill radius.
 
-Public contract:
-    count_pills(image_path: str) -> int
+Pipeline:
+1. Grayscale + Gaussian blur.
+2. Otsu threshold (inverted if bg is bright).
+3. Morph open + close to clean speckle/holes.
+4. Distance transform (L2).
+5. Estimate pill radius `r`: median of per-connected-component `dist.max()` (one peak per blob).
+6. Find local maxima: a pixel is a seed iff `dist == cv2.dilate(dist, (k,k))` with k ~ pill diameter
+   AND `dist > 0.3 * r` (reject low/edge noise).
+7. Count seed connected components.
 """
 import cv2
 import numpy as np
@@ -34,21 +32,29 @@ def _bg_is_bright(gray: np.ndarray) -> bool:
     return float(np.median(corners)) > float(np.median(gray))
 
 
+def _estimate_radius(dist: np.ndarray, mask: np.ndarray) -> float:
+    """Median of per-CC max distance — robust pill-radius estimate."""
+    n, labels, _, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
+    peaks = []
+    for i in range(1, n):
+        region = dist[labels == i]
+        if region.size > 0:
+            peaks.append(float(region.max()))
+    if not peaks:
+        return 0.0
+    return float(np.median(peaks))
+
+
 def count_pills(image_path: str) -> int:
     img = cv2.imread(image_path)
     if img is None:
         return -1
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    h, w = gray.shape
-    img_area = h * w
 
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    if _bg_is_bright(gray):
-        thresh_type = cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU
-    else:
-        thresh_type = cv2.THRESH_BINARY | cv2.THRESH_OTSU
+    thresh_type = (cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU) if _bg_is_bright(gray) else (cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     _, binary = cv2.threshold(blurred, 0, 255, thresh_type)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
@@ -59,16 +65,15 @@ def count_pills(image_path: str) -> int:
     if dist.max() <= 0:
         return 0
 
-    seed_thresh = 0.5 * float(dist.max())
-    _, seeds = cv2.threshold(dist, seed_thresh, 255, cv2.THRESH_BINARY)
-    seeds = seeds.astype(np.uint8)
+    r = _estimate_radius(dist, cleaned)
+    if r <= 0:
+        return 0
 
-    num_labels, _, stats, _ = cv2.connectedComponentsWithStats(seeds, connectivity=8)
+    # Local-max window ~ pill diameter (≈ 2r). Odd size, min 3.
+    k = max(3, int(round(2 * r)) | 1)
+    dilated = cv2.dilate(dist, np.ones((k, k), np.uint8))
+    is_peak = (dist == dilated) & (dist > 0.3 * r)
+    seeds = is_peak.astype(np.uint8) * 255
 
-    min_seed_area = max(2, int(img_area * 0.00005))
-    count = 0
-    for i in range(1, num_labels):
-        if stats[i, cv2.CC_STAT_AREA] >= min_seed_area:
-            count += 1
-
-    return int(count)
+    num_labels, _, _, _ = cv2.connectedComponentsWithStats(seeds, connectivity=8)
+    return int(num_labels - 1)  # exclude background label
