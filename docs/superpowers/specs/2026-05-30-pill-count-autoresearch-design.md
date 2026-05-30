@@ -108,6 +108,54 @@ Each new iteration section explicitly references and compares with previous find
 4. If stuck: fundamentally different approaches (watershed, distance transform, blob detection)
 5. Image-specific logic if needed
 
+## Handoff Context
+
+### What exists today
+- `pill_counter.py` — existing baseline approach (multi-threshold + Canny consensus). This is the starting point for `counter.py`. Copy it as iteration 0.
+- `test-img/` — 15 test images (test0-test15, test13 is in skip/ folder and excluded)
+- `user_specs.md` — ground truth counts and description of the problem
+- `prepare.py`, `train.py` — from the autoresearch project, NOT related to pill counting. Ignore.
+- `README.md` — from the autoresearch project. Ignore.
+
+### Baseline accuracy
+The existing `pill_counter.py` has NOT been run yet in this session. The first iteration should copy its logic into `counter.py`, run eval, and establish the baseline.
+
+### eval.py output format
+
+stderr (human-readable):
+```
+  test0: got=24 expected=24 diff=+0 OK
+  test1: got=18 expected=18 diff=+0 OK
+  test2: got=30 expected=28 diff=+2 OVER
+  ...
+Accuracy: 10/15 (66.7%)
+```
+
+stdout (JSON):
+```json
+{
+  "results": {
+    "test0": {"count": 24, "expected": 24, "diff": 0, "match": true},
+    "test2": {"count": 30, "expected": 28, "diff": 2, "match": false}
+  },
+  "summary": {"matches": 10, "total": 15, "accuracy_pct": 66.7}
+}
+```
+
+### How to start a new session
+1. Read this spec
+2. Read existing `pill_counter.py` (the baseline)
+3. Create `eval.py` (fixed evaluation harness)
+4. Copy `pill_counter.py` logic into `counter.py` as iteration 0
+5. Run `python eval.py` to establish baseline
+6. Write `logs/iter_0.md` with baseline results
+7. Start the autoresearch loop from iteration 1
+
+### Image descriptions (from user_specs.md)
+- **Easy cases**: test0 (24 obj, not pills), test1 (18), test8 (23), test9 (6), test10 (12), test11 (7), test14 (8), test15 (50)
+- **Hard cases**: test2 (28), test3 (23), test4 (23), test5 (25), test12 (10, heavy reflection)
+- **Small mirror**: test6 (21), test7 (30)
+
 ## Ground Truth (from user_specs.md)
 
 | Image  | Expected |
