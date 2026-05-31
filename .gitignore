@@ -8,3 +8,5 @@ sam_vit_b.pth
 # Python cache
 __pycache__/
 *.pyc
+
+output/*/*.jpg

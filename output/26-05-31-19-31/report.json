@@ -2,107 +2,107 @@
   "results": {
     "test0": {
       "image": "test0",
-      "count": 0,
+      "count": 34,
       "expected": 24,
-      "diff": -24,
+      "diff": 10,
       "match": false
     },
     "test1": {
       "image": "test1",
-      "count": 0,
+      "count": 20,
       "expected": 18,
-      "diff": -18,
+      "diff": 2,
       "match": false
     },
     "test10": {
       "image": "test10",
-      "count": 0,
+      "count": 18,
       "expected": 12,
-      "diff": -12,
+      "diff": 6,
       "match": false
     },
     "test11": {
       "image": "test11",
-      "count": 0,
+      "count": 18,
       "expected": 7,
-      "diff": -7,
+      "diff": 11,
       "match": false
     },
     "test12": {
       "image": "test12",
-      "count": 0,
+      "count": 18,
       "expected": 10,
-      "diff": -10,
+      "diff": 8,
       "match": false
     },
     "test14": {
       "image": "test14",
-      "count": 0,
+      "count": 13,
       "expected": 8,
-      "diff": -8,
+      "diff": 5,
       "match": false
     },
     "test15": {
       "image": "test15",
-      "count": 0,
+      "count": 77,
       "expected": 50,
-      "diff": -50,
+      "diff": 27,
       "match": false
     },
     "test2": {
       "image": "test2",
-      "count": 0,
+      "count": 38,
       "expected": 28,
-      "diff": -28,
+      "diff": 10,
       "match": false
     },
     "test3": {
       "image": "test3",
-      "count": 0,
+      "count": 29,
       "expected": 23,
-      "diff": -23,
+      "diff": 6,
       "match": false
     },
     "test4": {
       "image": "test4",
-      "count": 0,
+      "count": 26,
       "expected": 23,
-      "diff": -23,
+      "diff": 3,
       "match": false
     },
     "test5": {
       "image": "test5",
-      "count": 0,
+      "count": 32,
       "expected": 25,
-      "diff": -25,
+      "diff": 7,
       "match": false
     },
     "test6": {
       "image": "test6",
-      "count": 0,
+      "count": 24,
       "expected": 21,
-      "diff": -21,
+      "diff": 3,
       "match": false
     },
     "test7": {
       "image": "test7",
-      "count": 0,
+      "count": 34,
       "expected": 30,
-      "diff": -30,
+      "diff": 4,
       "match": false
     },
     "test8": {
       "image": "test8",
-      "count": 0,
+      "count": 26,
       "expected": 23,
-      "diff": -23,
+      "diff": 3,
       "match": false
     },
     "test9": {
       "image": "test9",
-      "count": 0,
+      "count": 12,
       "expected": 6,
-      "diff": -6,
+      "diff": 6,
       "match": false
     }
   },

@@ -6,7 +6,7 @@ Zero business logic.
 import os
 import sys
 
-from core import process
+from core import process, OUTPUT_DIR
 from eval import evaluate
 from report import create, add, save
 
@@ -18,7 +18,7 @@ def get_image_paths(folder: str) -> list[str]:
     paths = []
     for f in sorted(os.listdir(folder)):
         ext = os.path.splitext(f)[1].lower()
-        if ext in IMAGE_EXTENSIONS:
+        if ext in IMAGE_EXTENSIONS and "_out" not in f:
             paths.append(os.path.join(folder, f))
     return paths
 
@@ -28,13 +28,13 @@ def image_name_from_path(path: str) -> str:
     return os.path.splitext(os.path.basename(path))[0]
 
 
-def run_folder(folder_path: str, report_path: str = "report.json"):
+def run_folder(folder_path: str):
     """
     Pure orchestrator. No business logic.
 
     1. Find all image files in folder (non-recursive)
     2. For each image: core → eval → report
-    3. Save report
+    3. Save report to the same timestamped output folder as images
     """
     report = create()
     image_paths = get_image_paths(folder_path)
@@ -49,9 +49,15 @@ def run_folder(folder_path: str, report_path: str = "report.json"):
         eval_result = evaluate(name, result)
         add(report, eval_result)
 
-        status = "OK" if eval_result["match"] else f"diff={eval_result['diff']:+d}"
+        if "error" in eval_result:
+            status = f"ERROR: {eval_result['error']}"
+        elif eval_result["match"]:
+            status = "OK"
+        else:
+            status = f"diff={eval_result['diff']:+d}"
         print(f"  {name}: got={eval_result['count']} expected={eval_result['expected']} {status}", file=sys.stderr)
 
+    report_path = os.path.join(OUTPUT_DIR, "report.json")
     save(report, report_path)
 
     s = report["summary"]
@@ -61,5 +67,4 @@ def run_folder(folder_path: str, report_path: str = "report.json"):
 
 if __name__ == "__main__":
     folder = sys.argv[1] if len(sys.argv) > 1 else "test-img"
-    report = sys.argv[2] if len(sys.argv) > 2 else "report.json"
-    run_folder(folder, report)
+    run_folder(folder)
