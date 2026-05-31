@@ -50,26 +50,31 @@ def run_folder(folder_path: str):
         result["output_file"] = save_annotated(
             result["image"], result["pill_masks"], result["image_path"], OUTPUT_DIR
         )
-        
-        # Evaluated
+
+        # Report (always — just count)
+        add(report, name, result["count"])
+
+        # Eval (only when ground truth exists — for tuning)
         eval_result = evaluate(name, result)
-
-        # Report
-        add(report, eval_result)
-
-        if "error" in eval_result:
-            status = f"ERROR: {eval_result['error']}"
-        elif eval_result["match"]:
-            status = "OK"
+        if "error" not in eval_result:
+            report["results"][name].update({
+                "expected": eval_result["expected"],
+                "diff": eval_result["diff"],
+                "match": eval_result["match"],
+            })
+            status = "OK" if eval_result["match"] else f"diff={eval_result['diff']:+d}"
+            print(f"  {name}: got={eval_result['count']} expected={eval_result['expected']} {status}", file=sys.stderr)
         else:
-            status = f"diff={eval_result['diff']:+d}"
-        print(f"  {name}: got={eval_result['count']} expected={eval_result['expected']} {status}", file=sys.stderr)
+            print(f"  {name}: got={result['count']}", file=sys.stderr)
 
     report_path = os.path.join(OUTPUT_DIR, "report.json")
     save(report, report_path)
 
     s = report["summary"]
-    print(f"\nAccuracy: {s['matches']}/{s['total']} ({s['accuracy_pct']}%)", file=sys.stderr)
+    if s["matches"] > 0 or s["accuracy_pct"] > 0:
+        print(f"\nAccuracy: {s['matches']}/{s['total']} ({s['accuracy_pct']}%)", file=sys.stderr)
+    else:
+        print(f"\nProcessed {s['total']} images", file=sys.stderr)
     print(f"Report saved to {report_path}", file=sys.stderr)
 
 

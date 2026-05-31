@@ -10,10 +10,9 @@ def create() -> dict:
     return {"results": {}, "summary": {}}
 
 
-def add(report: dict, eval_result: dict) -> dict:
-    """Append one eval result to the report. Returns updated report."""
-    image_name = eval_result["image"]
-    report["results"][image_name] = eval_result
+def add(report: dict, image_name: str, count: int) -> dict:
+    """Append one result to the report. Returns updated report."""
+    report["results"][image_name] = {"image": image_name, "count": count}
     return report
 
 
@@ -21,11 +20,17 @@ def summary(report: dict) -> dict:
     """Compute summary stats from all results."""
     results = report["results"]
     total = len(results)
-    matches = sum(1 for r in results.values() if r.get("match"))
-    accuracy_pct = round(matches / total * 100, 1) if total > 0 else 0.0
+    # Accuracy only available when eval data (expected/match) is present
+    eval_results = [r for r in results.values() if "expected" in r]
+    if eval_results:
+        matches = sum(1 for r in eval_results if r.get("match"))
+        accuracy_pct = round(matches / len(eval_results) * 100, 1)
+    else:
+        matches = 0
+        accuracy_pct = 0.0
     return {
-        "matches": matches,
         "total": total,
+        "matches": matches,
         "accuracy_pct": accuracy_pct,
     }
 
