@@ -119,20 +119,30 @@ def process(image_path: str) -> dict:
         threshold = max(threshold, 40)  # minimum tolerance
         candidates = [m for m, d in zip(candidates, color_dists) if d <= threshold]
 
-    # Step 4: Shape outlier filter — reject extreme aspect ratio or low fill
+    # Step 4: Shape outlier filter — reject extreme aspect, low fill/circ, or odd size
     if len(candidates) >= 3:
         shapes = []
+        med_area_c = np.median([m["area"] for m in candidates])
         for m in candidates:
             seg = m["segmentation"].astype(np.uint8)
             x, y, bw, bh = cv2.boundingRect(seg)
             aspect = max(bw, bh) / max(min(bw, bh), 1)
             fill = m["area"] / (bw * bh) if bw * bh > 0 else 0
-            shapes.append((aspect, fill))
+            contours, _ = cv2.findContours(seg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cnt = max(contours, key=cv2.contourArea)
+            perimeter = cv2.arcLength(cnt, True)
+            circ = 4 * np.pi * m["area"] / (perimeter * perimeter) if perimeter > 0 else 0
+            area_ratio = m["area"] / med_area_c
+            shapes.append((aspect, fill, circ, area_ratio))
         pill_masks = []
-        for m, (aspect, fill) in zip(candidates, shapes):
+        for m, (aspect, fill, circ, area_ratio) in zip(candidates, shapes):
             if aspect > 3.0:
                 continue
-            if fill < 0.4:
+            if fill < 0.45:
+                continue
+            if circ < 0.55:
+                continue
+            if area_ratio < 0.80:
                 continue
             pill_masks.append(m)
     else:
@@ -153,8 +163,8 @@ def process(image_path: str) -> dict:
         ys, xs = np.where(mask > 0)
         if len(xs) > 0 and len(ys) > 0:
             cx, cy = int(xs.mean()), int(ys.mean())
-            cv2.putText(annotated, str(i + 1), (cx - 8, cy + 4),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
+            cv2.putText(annotated, str(i + 1), (cx - 10, cy + 5),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
     cv2.imwrite(output_path, annotated)
 
     return {
