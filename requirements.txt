@@ -1,0 +1,5 @@
+segment-anything
+torch
+torchvision
+opencv-python
+numpy

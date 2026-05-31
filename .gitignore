@@ -1,0 +1,10 @@
+# Virtual environment
+.venv/
+
+# SAM model checkpoints
+sam_vit_b.pth
+*.pth
+
+# Python cache
+__pycache__/
+*.pyc
