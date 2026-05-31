@@ -131,13 +131,13 @@ def process(image_path: str) -> dict:
     for i, m in enumerate(pill_masks):
         mask = m["segmentation"].astype(np.uint8)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(annotated, contours, -1, (0, 0, 255), 2)
+        cv2.drawContours(annotated, contours, -1, (0, 0, 255), 1)
         # Add number label
         ys, xs = np.where(mask > 0)
         if len(xs) > 0 and len(ys) > 0:
             cx, cy = int(xs.mean()), int(ys.mean())
-            cv2.putText(annotated, str(i + 1), (cx - 10, cy + 5),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            cv2.putText(annotated, str(i + 1), (cx - 8, cy + 4),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
     cv2.imwrite(output_path, annotated)
 
     return {
