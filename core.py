@@ -2,7 +2,7 @@
 Core image processing — counts pills using SAM (Segment Anything Model).
 
 Uses SamAutomaticMaskGenerator for zero-shot instance segmentation.
-Filters masks by area to keep only pill-sized objects.
+Filters masks by area cluster (pills share similar size) and shape.
 """
 
 import os
@@ -62,17 +62,17 @@ def process(image_path: str) -> dict:
     generator = _get_mask_generator()
     masks = generator.generate(image_rgb)
 
-    # Filter masks by area and shape
-    min_area = image_area * 0.002   # 0.2%
-    max_area = image_area * 0.08    # 8%
+    # Step 1: Loose area filter (remove tiny noise and huge background)
+    min_area = image_area * 0.001   # 0.1%
+    max_area = image_area * 0.10    # 10%
 
-    pill_masks = []
+    candidates = []
     for m in masks:
         area = m["area"]
         if not (min_area <= area <= max_area):
             continue
 
-        # Shape filter: check circularity and solidity
+        # Shape filter: circularity
         mask = m["segmentation"].astype(np.uint8)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if not contours:
@@ -82,19 +82,29 @@ def process(image_path: str) -> dict:
         if perimeter == 0:
             continue
         circularity = 4 * np.pi * area / (perimeter * perimeter)
-        if circularity < 0.45:  # too elongated/irregular
+        if circularity < 0.3:
             continue
 
-        # Solidity: ratio of contour area to convex hull area
+        # Solidity
         hull = cv2.convexHull(cnt)
         hull_area = cv2.contourArea(hull)
         if hull_area == 0:
             continue
         solidity = area / hull_area
-        if solidity < 0.7:  # too concave — likely noise or overlapping pills
+        if solidity < 0.6:
             continue
 
-        pill_masks.append(m)
+        candidates.append(m)
+
+    # Step 2: Area cluster filter — pills share similar size
+    # Find median area of candidates, keep only those within ±40%
+    if len(candidates) >= 3:
+        areas = np.array([m["area"] for m in candidates])
+        med_area = np.median(areas)
+        lo, hi = med_area * 0.6, med_area * 1.4
+        pill_masks = [m for m in candidates if lo <= m["area"] <= hi]
+    else:
+        pill_masks = candidates
 
     count = len(pill_masks)
 

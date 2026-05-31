@@ -23,6 +23,18 @@
 - Otsu + invert-if-bg-bright correctly separated fg/bg on every image (no Otsu failures observed).
   The bottleneck is *splitting clusters*, not *finding foreground*.
 
+## Iteration 12 — SAM + Area-Cluster Filter
+- **SAM over-segments but the right masks are there.** After area+shape filtering, the median mask
+  area corresponds to pill size. Non-pill objects (tray edges, reflections) have very different areas.
+- **Area-cluster filtering (median ± 40%) is a simple, effective filter.** Rejects outlier-area
+  objects without any tuning. Went from 0/15 → 2/15 in one step.
+- **No half-pill problem.** Diagnostic showed all mask areas cluster at full-pill size — the
+  over-counting comes from non-pill objects with similar area, not from split pills.
+- **Remaining over-counts (all +1 to +6) are non-pill objects with pill-like area.** These need
+  a second discriminator — likely color, since all pills in an image share the same color.
+- **Loosened shape thresholds (circularity ≥ 0.3, solidity ≥ 0.6) vs prior (0.45, 0.7).** SAM
+  masks are cleaner than OpenCV contours, so tighter thresholds would reject valid pills.
+
 ## Cross-cutting Patterns
 - **Global statistics over the whole image are the recurring failure mode.** Both iter 0 (median of all
   candidate counts) and iter 1 (50% of global `dist.max()`) failed because a small anomalous region
