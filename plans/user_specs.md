@@ -48,3 +48,14 @@ test12: 10 (heavy reflection)
 ## Small mirror
 test6: 21
 test7: 30
+
+# Very hard case
+test13: 100
+test16: 6
+test17: 7
+test18: 10
+test19: 10
+test20: 4 (2 color pill)
+test21: 10
+test22: 9
+test23 : 12

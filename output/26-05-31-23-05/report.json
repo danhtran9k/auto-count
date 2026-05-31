@@ -30,10 +30,10 @@
     },
     "test12": {
       "image": "test12",
-      "count": 11,
+      "count": 10,
       "expected": 10,
-      "diff": 1,
-      "match": false
+      "diff": 0,
+      "match": true
     },
     "test14": {
       "image": "test14",
@@ -107,8 +107,8 @@
     }
   },
   "summary": {
-    "matches": 14,
+    "matches": 15,
     "total": 15,
-    "accuracy_pct": 93.3
+    "accuracy_pct": 100.0
   }
 }

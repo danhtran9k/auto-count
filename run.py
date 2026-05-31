@@ -6,9 +6,10 @@ Zero business logic.
 import os
 import sys
 
-from core import process, OUTPUT_DIR
-from eval import evaluate
-from report import create, add, save
+from core import process
+from utils.annotated import save_annotated, OUTPUT_DIR
+from utils.eval import evaluate
+from utils.report import create, add, save
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
 
@@ -46,7 +47,14 @@ def run_folder(folder_path: str):
     for img_path in image_paths:
         name = image_name_from_path(img_path)
         result = process(img_path)
+        result["output_file"] = save_annotated(
+            result["image"], result["pill_masks"], result["image_path"], OUTPUT_DIR
+        )
+        
+        # Evaluated
         eval_result = evaluate(name, result)
+
+        # Report
         add(report, eval_result)
 
         if "error" in eval_result:

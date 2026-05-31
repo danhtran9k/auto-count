@@ -6,14 +6,11 @@ Filters masks by area cluster (pills share similar size) and shape.
 """
 
 import os
-from datetime import datetime
 
 import cv2
 import numpy as np
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 
-RUN_TIMESTAMP = datetime.now().strftime("%y-%m-%d-%H-%M")
-OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output", RUN_TIMESTAMP)
 
 # Lazy-load model (first call initializes, subsequent calls reuse)
 _sam_model = None
@@ -44,8 +41,10 @@ def process(image_path: str) -> dict:
     Returns:
         dict with:
           - "count": int (-1 on error)
-          - "output_file": str (path to annotated output image)
           - "num_masks": int (total masks from SAM before filtering)
+          - "pill_masks": list of filtered mask dicts
+          - "image": original BGR image
+          - "image_path": original image path
     """
     if not os.path.exists(image_path):
         return {"count": -1, "output_file": "", "error": "file not found"}
@@ -113,10 +112,23 @@ def process(image_path: str) -> dict:
         mean_colors = np.array(mean_colors)
         med_color = np.median(mean_colors, axis=0)
         color_dists = np.sqrt(((mean_colors - med_color) ** 2).sum(axis=1))
-        med_dist = np.median(color_dists)
-        # Keep masks within median color distance + 1.5x spread
-        threshold = med_dist + 2.5 * np.std(color_dists) if np.std(color_dists) > 0 else med_dist + 30
-        threshold = max(threshold, 40)  # minimum tolerance
+
+        # Gap-based: find largest ratio jump in sorted distances
+        sorted_dists = np.sort(color_dists)
+        if len(sorted_dists) >= 2:
+            gaps = np.diff(sorted_dists)
+            rel_gaps = [g / (sorted_dists[i] if sorted_dists[i] > 0 else 1.0)
+                        for i, g in enumerate(gaps)]
+            max_gap_idx = int(np.argmax(rel_gaps))
+            if rel_gaps[max_gap_idx] > 2.0 and sorted_dists[max_gap_idx] > 15:
+                threshold = sorted_dists[max_gap_idx] + gaps[max_gap_idx] * 0.5
+            else:
+                med_dist = np.median(color_dists)
+                threshold = med_dist + 2.5 * np.std(color_dists) if np.std(color_dists) > 0 else med_dist + 30
+                threshold = max(threshold, 40)
+        else:
+            threshold = float('inf')
+
         candidates = [m for m, d in zip(candidates, color_dists) if d <= threshold]
 
     # Step 4: Shape outlier filter — reject extreme aspect, low fill/circ, or odd size
@@ -150,25 +162,10 @@ def process(image_path: str) -> dict:
 
     count = len(pill_masks)
 
-    # Save annotated image to output/ directory
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    basename = os.path.splitext(os.path.basename(image_path))[0]
-    output_path = os.path.join(OUTPUT_DIR, f"{basename}_out.jpg")
-    annotated = image.copy()
-    for i, m in enumerate(pill_masks):
-        mask = m["segmentation"].astype(np.uint8)
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(annotated, contours, -1, (0, 0, 255), 1)
-        # Add number label
-        ys, xs = np.where(mask > 0)
-        if len(xs) > 0 and len(ys) > 0:
-            cx, cy = int(xs.mean()), int(ys.mean())
-            cv2.putText(annotated, str(i + 1), (cx - 10, cy + 5),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-    cv2.imwrite(output_path, annotated)
-
     return {
         "count": count,
-        "output_file": output_path,
         "num_masks": len(masks),
+        "pill_masks": pill_masks,
+        "image": image,
+        "image_path": image_path,
     }
