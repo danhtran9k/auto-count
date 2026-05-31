@@ -117,7 +117,24 @@ def process(image_path: str) -> dict:
         # Keep masks within median color distance + 1.5x spread
         threshold = med_dist + 2.5 * np.std(color_dists) if np.std(color_dists) > 0 else med_dist + 30
         threshold = max(threshold, 40)  # minimum tolerance
-        pill_masks = [m for m, d in zip(candidates, color_dists) if d <= threshold]
+        candidates = [m for m, d in zip(candidates, color_dists) if d <= threshold]
+
+    # Step 4: Shape outlier filter — reject extreme aspect ratio or low fill
+    if len(candidates) >= 3:
+        shapes = []
+        for m in candidates:
+            seg = m["segmentation"].astype(np.uint8)
+            x, y, bw, bh = cv2.boundingRect(seg)
+            aspect = max(bw, bh) / max(min(bw, bh), 1)
+            fill = m["area"] / (bw * bh) if bw * bh > 0 else 0
+            shapes.append((aspect, fill))
+        pill_masks = []
+        for m, (aspect, fill) in zip(candidates, shapes):
+            if aspect > 3.0:
+                continue
+            if fill < 0.4:
+                continue
+            pill_masks.append(m)
     else:
         pill_masks = candidates
 
