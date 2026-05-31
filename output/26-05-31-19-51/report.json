@@ -1,0 +1,114 @@
+{
+  "results": {
+    "test0": {
+      "image": "test0",
+      "count": 26,
+      "expected": 24,
+      "diff": 2,
+      "match": false
+    },
+    "test1": {
+      "image": "test1",
+      "count": 18,
+      "expected": 18,
+      "diff": 0,
+      "match": true
+    },
+    "test10": {
+      "image": "test10",
+      "count": 13,
+      "expected": 12,
+      "diff": 1,
+      "match": false
+    },
+    "test11": {
+      "image": "test11",
+      "count": 9,
+      "expected": 7,
+      "diff": 2,
+      "match": false
+    },
+    "test12": {
+      "image": "test12",
+      "count": 13,
+      "expected": 10,
+      "diff": 3,
+      "match": false
+    },
+    "test14": {
+      "image": "test14",
+      "count": 8,
+      "expected": 8,
+      "diff": 0,
+      "match": true
+    },
+    "test15": {
+      "image": "test15",
+      "count": 53,
+      "expected": 50,
+      "diff": 3,
+      "match": false
+    },
+    "test2": {
+      "image": "test2",
+      "count": 31,
+      "expected": 28,
+      "diff": 3,
+      "match": false
+    },
+    "test3": {
+      "image": "test3",
+      "count": 26,
+      "expected": 23,
+      "diff": 3,
+      "match": false
+    },
+    "test4": {
+      "image": "test4",
+      "count": 23,
+      "expected": 23,
+      "diff": 0,
+      "match": true
+    },
+    "test5": {
+      "image": "test5",
+      "count": 26,
+      "expected": 25,
+      "diff": 1,
+      "match": false
+    },
+    "test6": {
+      "image": "test6",
+      "count": 22,
+      "expected": 21,
+      "diff": 1,
+      "match": false
+    },
+    "test7": {
+      "image": "test7",
+      "count": 30,
+      "expected": 30,
+      "diff": 0,
+      "match": true
+    },
+    "test8": {
+      "image": "test8",
+      "count": 23,
+      "expected": 23,
+      "diff": 0,
+      "match": true
+    },
+    "test9": {
+      "image": "test9",
+      "count": 8,
+      "expected": 6,
+      "diff": 2,
+      "match": false
+    }
+  },
+  "summary": {
+    "matches": 5,
+    "total": 15,
+    "accuracy_pct": 33.3
+  }
+}

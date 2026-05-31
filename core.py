@@ -97,12 +97,27 @@ def process(image_path: str) -> dict:
         candidates.append(m)
 
     # Step 2: Area cluster filter — pills share similar size
-    # Find median area of candidates, keep only those within ±40%
     if len(candidates) >= 3:
         areas = np.array([m["area"] for m in candidates])
         med_area = np.median(areas)
         lo, hi = med_area * 0.6, med_area * 1.4
-        pill_masks = [m for m in candidates if lo <= m["area"] <= hi]
+        candidates = [m for m in candidates if lo <= m["area"] <= hi]
+
+    # Step 3: Color cluster filter — pills share similar color
+    if len(candidates) >= 3:
+        mean_colors = []
+        for m in candidates:
+            seg = m["segmentation"]
+            mean_rgb = image_rgb[seg].mean(axis=0)
+            mean_colors.append(mean_rgb)
+        mean_colors = np.array(mean_colors)
+        med_color = np.median(mean_colors, axis=0)
+        color_dists = np.sqrt(((mean_colors - med_color) ** 2).sum(axis=1))
+        med_dist = np.median(color_dists)
+        # Keep masks within median color distance + 1.5x spread
+        threshold = med_dist + 2.5 * np.std(color_dists) if np.std(color_dists) > 0 else med_dist + 30
+        threshold = max(threshold, 40)  # minimum tolerance
+        pill_masks = [m for m, d in zip(candidates, color_dists) if d <= threshold]
     else:
         pill_masks = candidates
 

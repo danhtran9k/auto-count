@@ -32,6 +32,15 @@
   over-counting comes from non-pill objects with similar area, not from split pills.
 - **Remaining over-counts (all +1 to +6) are non-pill objects with pill-like area.** These need
   a second discriminator — likely color, since all pills in an image share the same color.
+
+## Iteration 13 — Color Cluster Filter
+- **Color filtering adds 3 more exact matches** (test1, test4, test5 → but test5 regressed later).
+  Combined area+color gets 5/15.
+- **Adaptive threshold (median + 2.5σ, min 40) works better than fixed.** Too tight (1.5σ, min 25)
+  over-filtered and lost test14. Too loose and it doesn't help.
+- **Non-pill objects that pass both filters are color+area-similar to pills.** These are the hard
+  cases — reflections, tray features that mimic pill appearance.
+- **HSV might be better than RGB** for color comparison — more robust to brightness variation.
 - **Loosened shape thresholds (circularity ≥ 0.3, solidity ≥ 0.6) vs prior (0.45, 0.7).** SAM
   masks are cleaner than OpenCV contours, so tighter thresholds would reject valid pills.
 
