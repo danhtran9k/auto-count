@@ -37,6 +37,20 @@ source .venv/bin/activate
 pip install .
 ```
 
+### PyTorch version compatibility
+
+If you're on **macOS 13 (Ventura) or older**, the latest PyTorch (2.12.0+) requires macOS 14+ (Sonoma). You may need to pin a lower version:
+
+```toml
+# pyproject.toml
+dependencies = [
+    "torch>=2.0,<2.6",
+    "torchvision>=0.15,<0.21",
+]
+```
+
+Then delete `uv.lock` and re-run `uv sync`.
+
 ## Usage
 
 ```bash
