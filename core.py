@@ -160,6 +160,27 @@ def process(image_path: str) -> dict:
     else:
         pill_masks = candidates
 
+    # Step 5: Deduplication — remove masks with high overlap (IoU > 0.5)
+    if len(pill_masks) >= 2:
+        segs = [m["segmentation"].astype(bool) for m in pill_masks]
+        keep = [True] * len(pill_masks)
+        for i in range(len(pill_masks)):
+            if not keep[i]:
+                continue
+            for j in range(i + 1, len(pill_masks)):
+                if not keep[j]:
+                    continue
+                inter = (segs[i] & segs[j]).sum()
+                union = (segs[i] | segs[j]).sum()
+                iou = inter / union if union > 0 else 0
+                if iou > 0.5:
+                    # Keep the larger mask, discard the smaller
+                    if pill_masks[i]["area"] >= pill_masks[j]["area"]:
+                        keep[j] = False
+                    else:
+                        keep[i] = False
+        pill_masks = [m for m, k in zip(pill_masks, keep) if k]
+
     count = len(pill_masks)
 
     return {
