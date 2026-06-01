@@ -7,7 +7,7 @@ import os
 import sys
 
 from core import process
-from utils.annotated import save_annotated, OUTPUT_DIR
+from utils.annotated import save_annotated, save_annotated_zone, OUTPUT_DIR
 from utils.eval import evaluate
 from utils.report import create, add, save
 
@@ -48,6 +48,9 @@ def run_folder(folder_path: str):
         name = image_name_from_path(img_path)
         result = process(img_path)
         result["output_file"] = save_annotated(
+            result["image"], result["pill_masks"], result["image_path"], OUTPUT_DIR
+        )
+        result["zone_file"] = save_annotated_zone(
             result["image"], result["pill_masks"], result["image_path"], OUTPUT_DIR
         )
 
