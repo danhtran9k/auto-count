@@ -146,7 +146,7 @@ def process(image_path: str) -> dict:
             circ = 4 * np.pi * m["area"] / (perimeter * perimeter) if perimeter > 0 else 0
             area_ratio = m["area"] / med_area_c
             shapes.append((aspect, fill, circ, area_ratio))
-        pill_masks = []
+        filtered = []
         for m, (aspect, fill, circ, area_ratio) in zip(candidates, shapes):
             if aspect > 3.0:
                 continue
@@ -156,37 +156,36 @@ def process(image_path: str) -> dict:
                 continue
             if area_ratio < 0.80:
                 continue
-            pill_masks.append(m)
-    else:
-        pill_masks = candidates
+            filtered.append(m)
+        candidates = filtered
 
     # Step 5: Deduplication — remove masks with high overlap (IoU > 0.5)
-    if len(pill_masks) >= 2:
-        segs = [m["segmentation"].astype(bool) for m in pill_masks]
-        keep = [True] * len(pill_masks)
-        for i in range(len(pill_masks)):
+    if len(candidates) >= 2:
+        segs = [m["segmentation"].astype(bool) for m in candidates]
+        keep = [True] * len(candidates)
+        for i in range(len(candidates)):
             if not keep[i]:
                 continue
-            for j in range(i + 1, len(pill_masks)):
+            for j in range(i + 1, len(candidates)):
                 if not keep[j]:
                     continue
                 inter = (segs[i] & segs[j]).sum()
                 union = (segs[i] | segs[j]).sum()
                 iou = inter / union if union > 0 else 0
                 if iou > 0.5:
-                    # Keep the larger mask, discard the smaller
-                    if pill_masks[i]["area"] >= pill_masks[j]["area"]:
+                    if candidates[i]["area"] >= candidates[j]["area"]:
                         keep[j] = False
                     else:
                         keep[i] = False
-        pill_masks = [m for m, k in zip(pill_masks, keep) if k]
+        candidates = [m for m, k in zip(candidates, keep) if k]
 
-    count = len(pill_masks)
+    count = len(candidates)
 
     return {
         "count": count,
         "num_masks": len(masks),
-        "pill_masks": pill_masks,
+        "raw_masks": masks,
+        "pill_masks": candidates,
         "image": image,
         "image_path": image_path,
     }

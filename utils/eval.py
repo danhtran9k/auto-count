@@ -1,9 +1,12 @@
 """
 Evaluate a single image result against ground truth.
+Also handles printing eval results.
 
 GROUND_TRUTH is hardcoded from user_specs.md.
 This file is essentially fixed — do not modify.
 """
+
+import sys
 
 GROUND_TRUTH = {
     "test0": 24, "test1": 18, "test2": 28, "test3": 23,
@@ -13,7 +16,7 @@ GROUND_TRUTH = {
 }
 
 
-def evaluate(image_name: str, result: dict) -> dict:
+def compare(image_name: str, result: dict) -> dict:
     """
     Evaluate one image result against ground truth.
 
@@ -43,4 +46,27 @@ def evaluate(image_name: str, result: dict) -> dict:
         "expected": expected,
         "diff": diff,
         "match": count == expected,
+    }
+
+
+def evaluate(image_name: str, result: dict) -> dict:
+    """
+    Evaluate and print result. Returns data for report.
+    
+    Returns:
+        dict with eval data to merge into report, or empty dict if no ground truth.
+    """
+    eval_result = compare(image_name, result)
+    
+    if "error" in eval_result:
+        print(f"  {image_name}: got={result['count']}", file=sys.stderr)
+        return {}
+    
+    status = "OK" if eval_result["match"] else f"diff={eval_result['diff']:+d}"
+    print(f"  {image_name}: got={eval_result['count']} expected={eval_result['expected']} {status}", file=sys.stderr)
+    
+    return {
+        "expected": eval_result["expected"],
+        "diff": eval_result["diff"],
+        "match": eval_result["match"],
     }

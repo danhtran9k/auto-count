@@ -9,7 +9,7 @@ import sys
 from core import process
 from utils.annotated import save_annotated, save_annotated_zone, OUTPUT_DIR
 from utils.eval import evaluate
-from utils.report import create, add, save
+from utils.report import create_empty_report, add_image_result, save_and_log
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
 
@@ -37,7 +37,7 @@ def run_folder(folder_path: str):
     2. For each image: core → eval → report
     3. Save report to the same timestamped output folder as images
     """
-    report = create()
+    report = create_empty_report()
     image_paths = get_image_paths(folder_path)
 
     if not image_paths:
@@ -54,31 +54,17 @@ def run_folder(folder_path: str):
             result["image"], result["pill_masks"], result["image_path"], OUTPUT_DIR
         )
 
-        # Report (always — just count)
-        add(report, name, result["count"])
+        add_image_result(report, name, result["count"])
 
-        # Eval (only when ground truth exists — for tuning)
+        # Eval (optional - print log eval result)
         eval_result = evaluate(name, result)
-        if "error" not in eval_result:
-            report["results"][name].update({
-                "expected": eval_result["expected"],
-                "diff": eval_result["diff"],
-                "match": eval_result["match"],
-            })
-            status = "OK" if eval_result["match"] else f"diff={eval_result['diff']:+d}"
-            print(f"  {name}: got={eval_result['count']} expected={eval_result['expected']} {status}", file=sys.stderr)
-        else:
-            print(f"  {name}: got={result['count']}", file=sys.stderr)
+        if eval_result:
+            # merge keys: expected, diff, match
+            report["results"][name].update(eval_result)  
+
 
     report_path = os.path.join(OUTPUT_DIR, "report.json")
-    save(report, report_path)
-
-    s = report["summary"]
-    if s["matches"] > 0 or s["accuracy_pct"] > 0:
-        print(f"\nAccuracy: {s['matches']}/{s['total']} ({s['accuracy_pct']}%)", file=sys.stderr)
-    else:
-        print(f"\nProcessed {s['total']} images", file=sys.stderr)
-    print(f"Report saved to {report_path}", file=sys.stderr)
+    save_and_log(report, report_path)
 
 
 if __name__ == "__main__":
