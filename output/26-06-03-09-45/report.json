@@ -1,0 +1,121 @@
+{
+  "results": {
+    "test0": {
+      "image": "test0",
+      "count": 24,
+      "expected": 24,
+      "diff": 0,
+      "match": true
+    },
+    "test1": {
+      "image": "test1",
+      "count": 18,
+      "expected": 18,
+      "diff": 0,
+      "match": true
+    },
+    "test10": {
+      "image": "test10",
+      "count": 12,
+      "expected": 12,
+      "diff": 0,
+      "match": true
+    },
+    "test11": {
+      "image": "test11",
+      "count": 7,
+      "expected": 7,
+      "diff": 0,
+      "match": true
+    },
+    "test12": {
+      "image": "test12",
+      "count": 10,
+      "expected": 10,
+      "diff": 0,
+      "match": true
+    },
+    "test13": {
+      "image": "test13",
+      "count": 100,
+      "expected": 100,
+      "diff": 0,
+      "match": true
+    },
+    "test14": {
+      "image": "test14",
+      "count": 8,
+      "expected": 8,
+      "diff": 0,
+      "match": true
+    },
+    "test15": {
+      "image": "test15",
+      "count": 50,
+      "expected": 50,
+      "diff": 0,
+      "match": true
+    },
+    "test2": {
+      "image": "test2",
+      "count": 28,
+      "expected": 28,
+      "diff": 0,
+      "match": true
+    },
+    "test3": {
+      "image": "test3",
+      "count": 23,
+      "expected": 23,
+      "diff": 0,
+      "match": true
+    },
+    "test4": {
+      "image": "test4",
+      "count": 23,
+      "expected": 23,
+      "diff": 0,
+      "match": true
+    },
+    "test5": {
+      "image": "test5",
+      "count": 25,
+      "expected": 25,
+      "diff": 0,
+      "match": true
+    },
+    "test6": {
+      "image": "test6",
+      "count": 21,
+      "expected": 21,
+      "diff": 0,
+      "match": true
+    },
+    "test7": {
+      "image": "test7",
+      "count": 30,
+      "expected": 30,
+      "diff": 0,
+      "match": true
+    },
+    "test8": {
+      "image": "test8",
+      "count": 23,
+      "expected": 23,
+      "diff": 0,
+      "match": true
+    },
+    "test9": {
+      "image": "test9",
+      "count": 6,
+      "expected": 6,
+      "diff": 0,
+      "match": true
+    }
+  },
+  "summary": {
+    "total": 16,
+    "matches": 16,
+    "accuracy_pct": 100.0
+  }
+}

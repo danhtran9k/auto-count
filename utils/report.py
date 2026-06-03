@@ -4,7 +4,21 @@ Generic reporting — no eval knowledge.
 """
 
 import json
+import math
 import sys
+import time
+from contextlib import contextmanager
+
+
+@contextmanager
+def timed_image(report: dict, image_name: str):
+    """Context manager that times the entire block and logs to report."""
+    start = time.perf_counter()
+    yield
+    elapsed_s = math.ceil((time.perf_counter() - start) * 10) / 10
+    if image_name in report["results"]:
+        report["results"][image_name]["elapsed_s"] = elapsed_s
+    print(f"  [{image_name}] {elapsed_s}s", file=sys.stderr)
 
 
 def create_empty_report() -> dict:

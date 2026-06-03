@@ -1,0 +1,79 @@
+{
+  "results": {
+    "test24": {
+      "image": "test24",
+      "count": 74,
+      "expected": 75,
+      "diff": -1,
+      "match": false
+    },
+    "test25": {
+      "image": "test25",
+      "count": 67,
+      "expected": 70,
+      "diff": -3,
+      "match": false
+    },
+    "test26": {
+      "image": "test26",
+      "count": 257,
+      "expected": 259,
+      "diff": -2,
+      "match": false
+    },
+    "test27": {
+      "image": "test27",
+      "count": 214,
+      "expected": 219,
+      "diff": -5,
+      "match": false
+    },
+    "test28": {
+      "image": "test28",
+      "count": 165,
+      "expected": 179,
+      "diff": -14,
+      "match": false
+    },
+    "test29": {
+      "image": "test29",
+      "count": 58,
+      "expected": 59,
+      "diff": -1,
+      "match": false
+    },
+    "test30": {
+      "image": "test30",
+      "count": 102,
+      "expected": 102,
+      "diff": 0,
+      "match": true
+    },
+    "test31": {
+      "image": "test31",
+      "count": 119,
+      "expected": 124,
+      "diff": -5,
+      "match": false
+    },
+    "test32": {
+      "image": "test32",
+      "count": 125,
+      "expected": 125,
+      "diff": 0,
+      "match": true
+    },
+    "test33": {
+      "image": "test33",
+      "count": 81,
+      "expected": 100,
+      "diff": -19,
+      "match": false
+    }
+  },
+  "summary": {
+    "total": 10,
+    "matches": 2,
+    "accuracy_pct": 20.0
+  }
+}

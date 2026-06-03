@@ -12,7 +12,11 @@ GROUND_TRUTH = {
     "test0": 24, "test1": 18, "test2": 28, "test3": 23,
     "test4": 23, "test5": 25, "test6": 21, "test7": 30,
     "test8": 23, "test9": 6, "test10": 12, "test11": 7,
-    "test12": 10, "test14": 8, "test15": 50,
+    "test12": 10, "test13": 100, "test14": 8, "test15": 50,
+
+    "test24": 75, "test25": 70, "test26": 259, "test27": 219,
+    "test28": 179, "test29": 59, "test30": 102, "test31": 124,
+    "test32": 125, "test33": 100,
 }
 
 

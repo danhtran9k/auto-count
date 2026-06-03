@@ -8,8 +8,9 @@ import sys
 
 from core import process
 from utils.annotated import save_annotated, save_annotated_zone, OUTPUT_DIR
+from utils.annotated_debug import save_debug
 from utils.eval import evaluate
-from utils.report import create_empty_report, add_image_result, save_and_log
+from utils.report import create_empty_report, add_image_result, save_and_log, timed_image
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
 
@@ -46,21 +47,26 @@ def run_folder(folder_path: str):
 
     for img_path in image_paths:
         name = image_name_from_path(img_path)
-        result = process(img_path)
-        result["output_file"] = save_annotated(
-            result["image"], result["pill_masks"], result["image_path"], OUTPUT_DIR
-        )
-        result["zone_file"] = save_annotated_zone(
-            result["image"], result["pill_masks"], result["image_path"], OUTPUT_DIR
-        )
+        with timed_image(report, name):
+            result = process(img_path)
+            add_image_result(report, name, result["count"])
 
-        add_image_result(report, name, result["count"])
+            eval_result = evaluate(name, result)
+            expected = eval_result.get("expected") if eval_result else None
+            if eval_result:
+                report["results"][name].update(eval_result)
 
-        # Eval (optional - print log eval result)
-        eval_result = evaluate(name, result)
-        if eval_result:
-            # merge keys: expected, diff, match
-            report["results"][name].update(eval_result)  
+            result["debug_file"] = save_debug(
+                result["image"], result["pill_masks"], result["raw_masks"],
+                result["image_path"], OUTPUT_DIR, expected,
+            )
+            
+            # result["output_file"] = save_annotated(
+            #     result["image"], result["pill_masks"], result["image_path"], OUTPUT_DIR
+            # )
+            # result["zone_file"] = save_annotated_zone(
+            #     result["image"], result["pill_masks"], result["image_path"], OUTPUT_DIR
+            # )
 
 
     report_path = os.path.join(OUTPUT_DIR, "report.json")
